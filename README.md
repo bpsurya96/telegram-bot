@@ -1,561 +1,453 @@
 # 🤖 Agentic Telegram RAG Bot
 
-**Intelligent AI assistant with adaptive model routing** - Only uses models when needed!
+> **Smart AI assistant that only uses models when needed** - 40% faster, 100% local, zero API costs
 
-## 🎯 Key Features
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Docker](https://img.shields.io/badge/docker-ready-brightgreen.svg)](https://www.docker.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-### 🧠 Intelligent Query Routing
-- **Intent Classification** - Understands what you're asking
-- **Adaptive Model Selection** - Uses the right tool for each task
-- **Cost Optimization** - 42% fewer LLM calls vs standard RAG
-- **40% Faster** - Instant responses for simple queries
+[Quick Start](#-quick-start-docker) • [Features](#-features) • [Demo](#-demo) • [Docs](#-documentation)
 
-### ⚡ Performance Modes
+---
 
-| Query Type | Response Time | Models Used |
-|------------|---------------|-------------|
-| Greetings | 0.01s | None (templates) |
-| Simple Q&A | 1-2s | LLM only |
-| Knowledge Search | 3-5s | RAG + LLM |
-| Image Analysis | 2-4s | Vision model |
+## 🎯 What It Does
+
+An intelligent Telegram bot that combines **RAG** (Retrieval-Augmented Generation) with **agentic routing** to answer questions efficiently:
+
+- 💬 **Simple greetings** → Instant template response (0.01s)
+- 📚 **Knowledge questions** → Searches docs + AI answer (3-5s)  
+- 🖼️ **Image uploads** → Vision model description (2-4s)
+- 🧠 **Smart routing** → Uses the right tool for each task
+
+**All processing happens locally** - No OpenAI, no API costs, complete privacy! 🔒
+
+---
+
+## ✨ Features
+
+### 🎯 Intelligent Agent
+- Auto-detects query intent
+- Routes to optimal model
+- 42% fewer LLM calls vs standard RAG
+- Template responses for speed
 
 ### 📚 RAG System
 - Local embeddings (sentence-transformers)
 - ChromaDB vector database
-- 10 sample documents included
+- 10 sample docs included
 - Source attribution
 
-### 🖼️ Vision Analysis
+### 🖼️ Vision AI
 - BLIP image captioning
-- Automatic tag generation
-- Supports JPG, PNG
+- Auto tag generation
+- JPG/PNG support
 
 ### 💬 Conversation
 - Context-aware responses
 - Multi-turn dialogues
-- Conversation summaries
 - History management
 
-## 🚀 Quick Start
+---
 
-### Local Installation
+## 🎬 Demo
 
-```bash
-# 1. Install Ollama
-curl -fsSL https://ollama.ai/install.sh | sh
-
-# 2. Start Ollama
-ollama serve
-
-# 3. Pull model (in another terminal)
-ollama pull llama3.2:3b
-
-# 4. Clone and setup
-git clone <your-repo>
-cd telegram-rag-bot
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-
-# 5. Configure
-cp .env.example .env
-# Edit .env and add TELEGRAM_BOT_TOKEN
-
-# 6. Run
-python bot_agentic.py
-```
-
-### Docker Installation (Recommended)
-
-```bash
-# 1. Clone
-git clone <your-repo>
-cd telegram-rag-bot
-
-# 2. Configure
-cp .env.docker .env
-# Edit .env and add TELEGRAM_BOT_TOKEN
-
-# 3. Run
-docker-compose up -d
-
-# 4. Check logs
-docker-compose logs -f
-```
-
-See [DOCKER_GUIDE.md](DOCKER_GUIDE.md) for complete Docker documentation.
-
-## 📖 Usage
-
-### Basic Commands
-
-```
-/start - Welcome message
-/ask <question> - Ask anything!
-/explain <question> - Show execution plan
-/stats - System statistics
-/summarize - Conversation summary
-/clear - Clear history
-/help - Show help
-```
-
-### Example Interactions
-
-**Simple Query (Fast Track):**
 ```
 You: /ask hi
 Bot: 👋 Hello! How can I help you today?
-⚡ Fast response (no AI models used)
-[0.01s response time]
-```
+     ⚡ Fast response (0.01s)
 
-**Knowledge Query (RAG Mode):**
-```
 You: /ask What is Docker?
-Bot: 🔍 Searching knowledge base...
-     Docker is a containerization platform...
-     
-📚 Sources: devops.md
-🧠 Powered by llama3.2:3b with RAG
-[3.8s response time]
-```
+Bot: Docker is a containerization platform...
+     📚 Sources: devops.md
+     🧠 Powered by llama3.2:3b (3.5s)
 
-**Execution Plan:**
-```
-You: /explain What is machine learning?
-Bot: 🎯 Execution Plan Analysis
-
-Query: What is machine learning?
-
-**Query Intent:** Knowledge Search
-**Execution Steps:**
-• Search knowledge base using vector_store
-• Generate response using ollama_llm
-
-**Estimated Time:** 3.8s
-```
-
-**Image Analysis:**
-```
 You: [Upload sunset photo]
-Bot: 🖼️ Analyzing image...
-     
-**Caption:** a beautiful sunset over the ocean
-**Tags:** sunset, ocean, beautiful
-
-👁️ Analyzed by blip-image-captioning-base
-[2.3s response time]
+Bot: **Caption:** beautiful sunset over ocean
+     **Tags:** sunset, ocean, beautiful
+     👁️ Analyzed by BLIP (2.3s)
 ```
 
-## 🏗️ Architecture
+---
 
-```
-┌─────────────┐
-│ Telegram    │
-│ User        │
-└──────┬──────┘
-       │
-       ▼
-┌──────────────────────────┐
-│  Agent Manager           │
-│  (Intent Classifier)     │
-├──────────────────────────┤
-│ • Classify query intent  │
-│ • Create execution plan  │
-│ • Route to optimal tool  │
-└──────┬───────────────────┘
-       │
-       ├─→ Simple Intent?
-       │   └─→ Template Response (0.01s) ⚡
-       │
-       ├─→ Knowledge Search?
-       │   └─→ Vector Store + LLM (3-5s) 🔍
-       │
-       ├─→ Image Analysis?
-       │   └─→ Vision Model (2-4s) 👁️
-       │
-       └─→ General Q&A?
-           └─→ LLM Only (1-2s) 🧠
+## 🚀 Quick Start (Docker)
+
+### Prerequisites
+- Docker & Docker Compose
+- Telegram Bot Token ([get one](https://t.me/botfather))
+- 8GB RAM recommended
+
+### 1. Clone & Configure
+```bash
+git clone <your-repo>
+cd telegram-rag-bot
+
+# Add your bot token
+echo 'TELEGRAM_BOT_TOKEN="your_token_here"' > .env
 ```
 
-## 🎯 How Agent Routing Works
-
-### Intent Classification
-
-The agent analyzes queries using pattern matching:
-
-```python
-Intent Types:
-- SIMPLE_GREETING   → Template
-- KNOWLEDGE_SEARCH  → RAG Pipeline
-- CALCULATION       → Python eval
-- IMAGE_ANALYSIS    → Vision model
-- SUMMARIZATION     → LLM only
-- CONVERSATION      → LLM + history
+### 2. Run
+```bash
+docker-compose up -d
 ```
 
-### Example Routing Decisions
+**First run downloads ~3GB models (takes 5-10 min)**
 
-| Query | Intent | Path | Time |
-|-------|--------|------|------|
-| "hi" | greeting | Template | 0.01s |
-| "thanks" | greeting | Template | 0.01s |
-| "What is Python?" | knowledge | RAG + LLM | 3.5s |
-| "Calculate 5+3" | calculation | Python eval | 0.02s |
-| [image] | image | Vision | 2.3s |
-| "Summarize chat" | summary | LLM | 1.8s |
+### 3. Test
+Open Telegram → Search your bot → Send `/start`
 
-### Optimization Rules
+**That's it!** 🎉
 
-1. **Template First** - Check if simple response works
-2. **Skip RAG** - Don't search if not needed
-3. **Cache Results** - Reuse when possible
-4. **Adaptive Resources** - Use minimal compute needed
+---
 
-## 📊 Performance Comparison
+## ⚡ Quick Start (Local)
+
+### Prerequisites
+- Python 3.11+
+- [Ollama](https://ollama.ai) installed
+
+### 1. Setup
+```bash
+# Start Ollama
+ollama serve
+
+# Pull model (in another terminal)
+ollama pull llama3.2:3b
+
+# Install dependencies
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+
+# Configure
+echo 'TELEGRAM_BOT_TOKEN="your_token_here"' > .env
+```
+
+### 2. Run
+```bash
+python bot.py
+```
+
+---
+
+## 📖 Usage
+
+### Commands
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `/start` | Welcome message | `/start` |
+| `/ask <question>` | Ask anything | `/ask What is Python?` |
+| `/explain <question>` | Show execution plan | `/explain What is Docker?` |
+| `[Upload image]` | Image description | Send any photo |
+| `/stats` | System info | `/stats` |
+| `/summarize` | Chat summary | `/summarize` |
+| `/clear` | Clear history | `/clear` |
+
+### Examples
+
+**Simple queries** (instant):
+```
+/ask hi
+/ask thanks
+/ask bye
+```
+
+**Knowledge queries** (RAG + LLM):
+```
+/ask What is Python used for?
+/ask Explain machine learning
+/ask Compare Docker and Kubernetes
+```
+
+**Images** (Vision model):
+```
+[Upload any image] → Get caption + tags
+```
+
+**Execution plan** (see how it works):
+```
+/explain What is Docker?
+→ Shows which models will be used
+```
+
+---
+
+## 🏗️ How It Works
+
+```
+User Query
+    ↓
+Agent Classifier
+    ↓
+    ├─→ Simple? → Template (0.01s) ⚡
+    ├─→ Knowledge? → RAG + LLM (3-5s) 🔍
+    ├─→ Image? → Vision Model (2-4s) 👁️
+    └─→ Complex? → Multi-step (5-10s) 🧠
+```
+
+**Smart routing = Faster responses + Lower costs**
+
+---
+
+## 📊 Performance
 
 | Metric | Standard RAG | Agentic AI | Improvement |
 |--------|--------------|------------|-------------|
-| Avg Response Time | 3.5s | 2.1s | ✅ 40% faster |
-| LLM Calls (per 100 queries) | 100 | 58 | ✅ 42% reduction |
-| CPU Usage | Constant high | Adaptive | ✅ 35% lower avg |
-| Simple Query Time | 3s | 0.01s | ✅ 300x faster |
+| Avg Response | 3.5s | 2.1s | **40% faster** |
+| LLM Calls | 100/100 | 58/100 | **42% fewer** |
+| Simple Queries | 3s | 0.01s | **300x faster** |
+| CPU Usage | Constant high | Adaptive | **35% lower** |
 
-See [AGENTIC_VS_STANDARD.md](AGENTIC_VS_STANDARD.md) for detailed comparison.
+---
 
 ## 🔧 Configuration
 
-### Environment Variables
+Edit `.env`:
 
 ```bash
 # Required
 TELEGRAM_BOT_TOKEN=your_token
 
-# LLM Configuration
-OLLAMA_HOST=http://localhost:11434
-OLLAMA_MODEL=llama3.2:3b  # or mistral:7b, phi3:mini
-
-# Embeddings
+# Optional (defaults shown)
+OLLAMA_MODEL=llama3.2:3b          # or mistral:7b, phi3:mini
 EMBEDDING_MODEL=all-MiniLM-L6-v2
-
-# Vision
 VISION_MODEL=Salesforce/blip-image-captioning-base
-
-# RAG Settings
 RETRIEVAL_K=3
 MAX_HISTORY_LENGTH=5
 ```
 
-### Customizing Intent Rules
+### Change Models
 
-Edit `agent_manager.py`:
-
-```python
-self.intent_patterns = {
-    QueryIntent.KNOWLEDGE_SEARCH: [
-        r'(what is|explain|describe)',
-        r'(how does|how to)',
-        # Add your patterns
-    ],
-    # Add new intents
-}
-```
-
-### Adding Custom Responses
-
-```python
-def get_simple_response(self, query: str, intent: QueryIntent):
-    if intent == QueryIntent.SIMPLE_GREETING:
-        if 'hi' in query:
-            return "Hello! 👋"
-    # Add custom responses
-```
-
-## 📦 Project Structure
-
-```
-telegram-rag-bot/
-├── bot_agentic.py          # Main agentic bot
-├── agent_manager.py        # Intent classification & routing
-├── knowledge_base.py       # Document storage
-├── vector_store.py         # ChromaDB interface
-├── llm_manager.py          # Ollama LLM
-├── vision_manager.py       # BLIP vision
-├── test_components.py      # Testing suite
-├── requirements.txt        # Dependencies
-├── .env.example           # Config template
-├── Dockerfile             # Docker build
-├── docker-compose.yml     # Docker orchestration
-├── docker-entrypoint.sh   # Container startup
-└── docs/
-    ├── README_AGENTIC.md  # This file
-    ├── DOCKER_GUIDE.md    # Docker deployment
-    ├── AGENTIC_VS_STANDARD.md  # Comparison
-    └── QUICKSTART.md      # Quick setup
-```
-
-## 🐳 Docker Deployment
-
-### Quick Start
 ```bash
+# Use faster/smaller model
+OLLAMA_MODEL=llama3.2:1b  # 1GB, faster
+
+# Use better quality model
+OLLAMA_MODEL=mistral:7b   # 4GB, better
+```
+
+### Add Your Documents
+
+Edit `knowledge_base.py`:
+
+```python
+DOCUMENTS.append({
+    "id": "my_doc",
+    "title": "My Document",
+    "content": "Your content here...",
+    "metadata": {"source": "my_file.md", "category": "custom"}
+})
+```
+
+---
+
+## 🐳 Docker Commands
+
+```bash
+# Start
 docker-compose up -d
-```
 
-### Check Status
-```bash
-docker-compose ps
+# View logs
 docker-compose logs -f
-```
 
-### Update
-```bash
+# Restart
+docker-compose restart
+
+# Stop
+docker-compose down
+
+# Update
+docker-compose down
 docker-compose pull
 docker-compose up -d --build
 ```
 
-Full Docker guide: [DOCKER_GUIDE.md](DOCKER_GUIDE.md)
+---
 
 ## 🧪 Testing
 
-### Test All Components
 ```bash
+# Test all components
 python test_components.py
+
+# Should show:
+# ✅ PASS - Package Imports
+# ✅ PASS - Ollama LLM
+# ✅ PASS - Embeddings
+# ✅ PASS - Vector Store
+# ✅ PASS - Vision Model
+# ✅ PASS - Telegram Config
 ```
 
-### Test Specific Features
-```python
-# Test intent classification
-from agent_manager import AgentManager
-agent = AgentManager()
-
-intent = agent.classify_intent("What is Docker?")
-print(intent)  # QueryIntent.KNOWLEDGE_SEARCH
-
-plan = agent.create_execution_plan("hi")
-print(plan)  # Fast template response
-```
-
-### Benchmark Performance
-```bash
-# Compare agentic vs standard
-python benchmark_comparison.py
-```
+---
 
 ## 🐛 Troubleshooting
 
-### ChromaDB Telemetry Error (FIXED ✅)
-
-**Error:**
-```
-chromadb.telemetry.product.posthog - ERROR
-```
-
-**Solution:** Updated to use `PersistentClient` with telemetry disabled:
-```python
-self.client = chromadb.PersistentClient(
-    path=persist_dir,
-    settings=Settings(anonymized_telemetry=False)
-)
-```
-
-### Bot Slow for Simple Queries
-
-**Check:** Are you using agentic bot?
-```bash
-python bot_agentic.py  # ✅ Fast
-python bot.py          # ⚠️ Slower
-```
-
-### Ollama Connection Failed
-
-```bash
-# Check Ollama
-curl http://localhost:11434/api/tags
-
-# Start Ollama
-ollama serve
-
-# Pull model
-ollama pull llama3.2:3b
-```
-
-### Docker Container Restarting
-
+### Bot not responding
 ```bash
 # Check logs
 docker-compose logs telegram-bot
 
-# Common issues:
-# 1. Invalid token → Check .env
-# 2. Out of memory → Increase limits
-# 3. Model download failed → Wait or pull manually
+# Restart
+docker-compose restart
 ```
 
-## 📈 Monitoring
-
-### View Execution Plans
-
-Use `/explain` command to see how queries are processed:
-
-```
-/explain What is Python?
-
-🎯 Query Intent: Knowledge Search
-📋 Execution Steps:
-  1. Search vector database
-  2. Generate response with LLM
-⏱️ Estimated Time: 3.8s
-💰 Cost: 1 LLM call
-```
-
-### System Stats
-
-```
-/stats
-
-📊 System Statistics
-🎯 Agent Status: Active
-📚 Documents: 10
-🔢 Embeddings: 384 dimensions
-🤖 Models:
-  • LLM: llama3.2:3b
-  • Vision: blip-base
-  • Embeddings: all-MiniLM-L6-v2
-👥 Users: 5 active conversations
-```
-
-### Logs
-
+### Ollama errors
 ```bash
-# Real-time logs
-docker-compose logs -f
+# Check Ollama
+docker exec telegram-rag-bot curl http://localhost:11434/api/tags
 
-# Or local
-tail -f logs/bot.log
+# Pull model
+docker exec telegram-rag-bot ollama pull llama3.2:3b
 ```
 
-## 🎓 Advanced Usage
+### Slow responses
+- Normal: 3-10s on CPU
+- Use smaller model: `OLLAMA_MODEL=llama3.2:1b`
+- Use GPU if available
 
-### Multi-Step Reasoning
-
-The agent can chain multiple tools:
-
-```
-Query: "Find info about Python and compare with Java"
-
-Plan:
-1. Search docs for Python info
-2. Search docs for Java info
-3. LLM synthesis and comparison
-4. Return structured answer
+### Out of memory
+```bash
+# Reduce memory in docker-compose.yml
+deploy:
+  resources:
+    limits:
+      memory: 4G  # From 8G
 ```
 
-### Context-Aware Responses
+---
+
+## 📁 Project Structure
 
 ```
-User: What is Docker?
-Bot: [Explains Docker...]
-
-User: What are its benefits?
-Bot: [Uses conversation context + RAG]
+telegram-rag-bot/
+├── bot.py                 # Main application
+├── agent_manager.py       # Intelligent routing
+├── vector_store.py        # ChromaDB + embeddings
+├── llm_manager.py         # Ollama interface
+├── vision_manager.py      # BLIP vision
+├── knowledge_base.py      # Document storage
+├── markdown_utils.py      # Telegram markdown fix
+├── requirements.txt       # Python dependencies
+├── .env                   # Configuration
+├── Dockerfile            # Container build
+├── docker-compose.yml    # Orchestration
+├── docker-entrypoint.sh  # Startup script
+└── test_components.py    # Testing suite
 ```
 
-### Custom Intent Handlers
-
-Add new intent types:
-
-```python
-# In agent_manager.py
-class QueryIntent(Enum):
-    CODE_GENERATION = "code_generation"
-
-# Add patterns
-self.intent_patterns[QueryIntent.CODE_GENERATION] = [
-    r'(write code|generate code|create function)'
-]
-
-# Add handler
-if intent == QueryIntent.CODE_GENERATION:
-    return self.generate_code(query)
-```
-
-## 🔐 Security
-
-- ✅ All processing local (no external APIs)
-- ✅ Environment variables for secrets
-- ✅ No data logging to external services
-- ✅ Docker isolation
-- ✅ Read-only filesystem options
-
-## 🚀 Roadmap
-
-- [ ] Reinforcement learning for intent
-- [ ] Multi-agent collaboration
-- [ ] Web UI dashboard
-- [ ] REST API endpoints
-- [ ] Analytics dashboard
-- [ ] Custom model fine-tuning
-- [ ] Multi-language support
+---
 
 ## 📚 Documentation
 
-- [README_AGENTIC.md](README_AGENTIC.md) - This file
-- [DOCKER_GUIDE.md](DOCKER_GUIDE.md) - Docker deployment
-- [AGENTIC_VS_STANDARD.md](AGENTIC_VS_STANDARD.md) - Comparison
-- [QUICKSTART.md](QUICKSTART.md) - Quick setup
-- [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) - Code architecture
+- **Quick Start**: You're reading it!
+- **Architecture**: See [How It Works](#️-how-it-works)
+- **API Reference**: Code is well-commented
+- **Troubleshooting**: See [🐛 section](#-troubleshooting)
+
+---
+
+## 🎓 Advanced Topics
+
+### Multi-Model Routing
+
+The agent automatically:
+1. Classifies query intent
+2. Selects optimal tool(s)
+3. Executes efficiently
+4. Returns results
+
+See `/explain <query>` to understand routing decisions.
+
+### Custom Intent Handlers
+
+Add new intents in `agent_manager.py`:
+
+```python
+QueryIntent.CODE_GENERATION = "code_generation"
+
+self.intent_patterns[QueryIntent.CODE_GENERATION] = [
+    r'(write code|generate|create function)'
+]
+```
+
+### Performance Tuning
+
+**Faster responses:**
+- Use `llama3.2:1b` (smallest)
+- Reduce `RETRIEVAL_K=2`
+- Limit `MAX_HISTORY_LENGTH=3`
+
+**Better quality:**
+- Use `mistral:7b` (larger)
+- Increase `RETRIEVAL_K=5`
+- Use GPU
+
+---
+
+## 🔒 Security & Privacy
+
+- ✅ **100% Local Processing** - No external APIs
+- ✅ **No Data Collection** - Everything stays on your server
+- ✅ **Environment Variables** - Secrets not in code
+- ✅ **Docker Isolation** - Containerized deployment
+- ✅ **Read-Only Options** - Can run with restricted permissions
+
+---
+
+## 🚀 Roadmap
+
+- [ ] Web UI dashboard
+- [ ] Document upload (PDF/DOCX)
+- [ ] Multi-language support
+- [ ] Voice message support
+- [ ] Analytics dashboard
+- [ ] Custom model fine-tuning
+
+---
 
 ## 🤝 Contributing
 
-Contributions welcome!
+Contributions welcome! Please:
 
-```bash
-# Fork repository
-git clone <your-fork>
+1. Fork the repo
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Submit a PR
 
-# Create branch
-git checkout -b feature/new-intent-type
-
-# Make changes
-# Test thoroughly
-python test_components.py
-
-# Submit PR
-```
+---
 
 ## 📄 License
 
 MIT License - Free to use and modify!
 
+---
+
 ## 🙏 Credits
 
+Built with:
 - [Ollama](https://ollama.ai) - Local LLM runtime
-- [ChromaDB](https://www.trychroma.com/) - Vector database
-- [sentence-transformers](https://www.sbert.net/) - Embeddings
+- [ChromaDB](https://trychroma.com) - Vector database
 - [BLIP](https://github.com/salesforce/BLIP) - Vision model
-- [python-telegram-bot](https://python-telegram-bot.org/) - Telegram API
+- [python-telegram-bot](https://python-telegram-bot.org) - Telegram API
 
 ---
 
-## ✨ Why Agentic AI?
+## 💬 Support
 
-**Traditional RAG:**
-Every query → Vector search → LLM → Response
-- Consistent but inefficient
-- Wastes resources on simple queries
-- Fixed pipeline
+**Issues?** Open a [GitHub Issue](../../issues)
 
-**Agentic AI:**
-Query → Intent Analysis → Optimal Path → Response
-- Intelligent routing
-- Resource-efficient
-- Adaptive approach
+**Questions?** Check [Troubleshooting](#-troubleshooting)
 
-**Result: 40% faster, 42% fewer LLM calls, better UX!** 🚀
-
----
-
-**Questions?** Open an issue!
 **Like it?** Give a ⭐!
 
-Ready to start? → [QUICKSTART.md](QUICKSTART.md)
+---
+
+<div align="center">
+
+**Made with ❤️ for the open-source community**
+
+[⬆ Back to Top](#-agentic-telegram-rag-bot)
+
+</div>

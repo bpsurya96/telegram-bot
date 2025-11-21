@@ -44,7 +44,7 @@ echo ""
 echo "================================"
 echo "Starting Telegram Bot"
 echo "================================"
-python bot_agentic.py
+python bot.py
 
 # If bot exits, keep Ollama running for debugging
 wait $OLLAMA_PID

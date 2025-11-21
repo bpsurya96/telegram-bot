@@ -1,6 +1,6 @@
 """
-Telegram RAG Bot with Local Models
-Main bot implementation using Ollama and local vision models
+Telegram Agentic RAG Bot
+Uses intelligent routing to decide which models to call
 """
 
 import os
@@ -9,12 +9,14 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from dotenv import load_dotenv
 
-# Import our custom modules
+# Import components
 from vector_store import VectorStore
 from llm_manager import LLMManager
 from vision_manager import VisionManager
+from agent_manager import AgentManager, AgenticQueryProcessor
+from markdown_utils import sanitize_markdown
 
-# Load environment variables
+# Load environment
 load_dotenv()
 
 # Configure logging
@@ -24,39 +26,61 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Initialize components
+# Global components
 vector_store = None
 llm_manager = None
 vision_manager = None
+agent_processor = None
+agent_manager = None
 
 # User conversation history
 user_history = {}
 
 def initialize_components():
     """Initialize all AI components"""
-    global vector_store, llm_manager, vision_manager
+    global vector_store, llm_manager, vision_manager, agent_processor, agent_manager
     
-    logger.info("=" * 50)
-    logger.info("Initializing Telegram RAG Bot")
-    logger.info("=" * 50)
+    logger.info("=" * 60)
+    logger.info("🤖 Initializing Agentic Telegram RAG Bot")
+    logger.info("=" * 60)
     
     # 1. Initialize Vector Store
+    logger.info("\n📚 [1/5] Initializing Vector Store...")
     embedding_model = os.getenv("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
     vector_store = VectorStore(embedding_model_name=embedding_model)
-    logger.info(f"Vector store stats: {vector_store.get_stats()}")
+    logger.info(f"✓ Vector store ready: {vector_store.get_stats()}")
     
-    # 2. Initialize LLM (Ollama)
+    # 2. Initialize LLM
+    logger.info("\n🧠 [2/5] Initializing LLM (Ollama)...")
     ollama_model = os.getenv("OLLAMA_MODEL", "llama3.2:3b")
     ollama_host = os.getenv("OLLAMA_HOST", "http://localhost:11434")
     llm_manager = LLMManager(model_name=ollama_model, host=ollama_host)
+    logger.info(f"✓ LLM ready: {ollama_model}")
     
     # 3. Initialize Vision Model
+    logger.info("\n👁️ [3/5] Initializing Vision Model...")
     vision_model = os.getenv("VISION_MODEL", "Salesforce/blip-image-captioning-base")
     vision_manager = VisionManager(model_name=vision_model)
+    logger.info(f"✓ Vision model ready")
     
-    logger.info("=" * 50)
-    logger.info("✓ All components initialized successfully!")
-    logger.info("=" * 50)
+    # 4. Initialize Agent Manager
+    logger.info("\n🎯 [4/5] Initializing Agent Manager...")
+    agent_manager = AgentManager()
+    logger.info(f"✓ Agent manager ready")
+    
+    # 5. Initialize Agentic Processor
+    logger.info("\n🚀 [5/5] Initializing Agentic Query Processor...")
+    agent_processor = AgenticQueryProcessor(
+        vector_store=vector_store,
+        llm_manager=llm_manager,
+        vision_manager=vision_manager
+    )
+    logger.info(f"✓ Agentic processor ready")
+    
+    logger.info("\n" + "=" * 60)
+    logger.info("✅ All components initialized successfully!")
+    logger.info("🎯 Using intelligent query routing")
+    logger.info("=" * 60 + "\n")
 
 def get_user_history(user_id: int) -> list:
     """Get conversation history for user"""
@@ -70,121 +94,142 @@ def add_to_history(user_id: int, role: str, content: str):
     user_history[user_id].append({"role": role, "content": content})
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Start command - welcome message"""
+    """Start command"""
     welcome_msg = """
-🤖 **Welcome to Local GenAI Bot!**
+🤖 **Agentic RAG Bot - Intelligent AI Assistant**
 
-I use fully local AI models running on this server:
-• 🧠 Ollama (LLaMA 3.2) for answering questions
-• 📚 Sentence-Transformers for semantic search
-• 🖼️ BLIP for image descriptions
+I use **intelligent query routing** to provide fast, efficient responses!
 
-**Available Commands:**
+**🎯 How I Work:**
+• **Simple questions** → Instant template response
+• **Knowledge queries** → Search docs + LLM
+• **Complex analysis** → Multi-step reasoning
+• **Images** → Vision model analysis
 
-📚 **RAG (Knowledge Base)**
-`/ask <question>` - Ask about programming, ML, DevOps
-Example: `/ask What is Python used for?`
+**💡 Available Commands:**
 
-🖼️ **Image Description**
-Send me any image and I'll describe it!
+📚 **Ask Questions**
+`/ask <question>` - Ask anything!
+Examples:
+• `/ask hi` → Instant response ⚡
+• `/ask What is Docker?` → RAG search 🔍
+• `/ask Compare Python and Java` → Deep analysis 🧠
 
-💬 **Conversation**
-`/summarize` - Summarize our chat
-`/clear` - Clear conversation history
-`/stats` - Show system statistics
-`/help` - Show this message
+🖼️ **Image Analysis**
+Send any image → Automatic description
 
-**How it works:**
-1. Your questions search our knowledge base
-2. Relevant documents are retrieved
-3. Local LLM generates answers with context
-4. All processing happens locally! 🔒
+🎯 **Agent Features**
+`/explain <question>` - Show execution plan
+`/stats` - System statistics
+`/summarize` - Conversation summary
+`/clear` - Clear history
 
-Ready to start! Try `/ask What is Docker?`
+**✨ Smart Features:**
+✅ Automatic intent detection
+✅ Optimal model selection  
+✅ Fast template responses
+✅ Cost-efficient processing
+
+Try: `/explain What is machine learning?`
 """
     await update.message.reply_text(welcome_msg, parse_mode='Markdown')
 
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Help command"""
-    await start(update, context)
-
-async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Show system statistics"""
-    stats = vector_store.get_stats()
+async def explain_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Explain execution plan for a query"""
+    query = ' '.join(context.args) if context.args else ""
     
-    stats_msg = f"""
-📊 **System Statistics**
+    if not query:
+        await update.message.reply_text(
+            "Usage: `/explain <your question>`\n\n"
+            "Example: `/explain What is Docker?`\n\n"
+            "I'll show you how I would process this query!",
+            parse_mode='Markdown'
+        )
+        return
+    
+    # Create execution plan
+    plan = agent_manager.create_execution_plan(query)
+    plan = agent_manager.optimize_plan(plan)
+    
+    # Get explanation
+    explanation = agent_manager.explain_plan(plan)
+    
+    # Format response
+    response = f"""🎯 **Execution Plan Analysis**
 
-**Vector Store:**
-• Documents: {stats['total_documents']}
-• Embedding Dimensions: {stats['embedding_model']}
+**Query:** {query}
 
-**Models:**
-• LLM: {llm_manager.model_name}
-• Vision: {vision_manager.model_name}
-• Embeddings: {vector_store.embedding_model}
+{explanation}
 
-**User Stats:**
-• Conversations tracked: {len(user_history)}
+**Cost Optimization:**
+{'✅ Using fast template response' if plan['simple_response'] else '🔍 Using AI models for best accuracy'}
 """
-    await update.message.reply_text(stats_msg, parse_mode='Markdown')
+    
+    await update.message.reply_text(response, parse_mode='Markdown')
 
 async def ask_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle RAG queries"""
+    """Handle queries with agentic routing"""
     user_id = update.effective_user.id
-    
-    # Extract query
     query = ' '.join(context.args) if context.args else ""
     
     if not query:
         await update.message.reply_text(
             "Please provide a question!\n\n"
-            "Example: `/ask What is machine learning?`",
+            "Example: `/ask What is Python?`",
             parse_mode='Markdown'
         )
         return
     
-    # Send processing message
-    status_msg = await update.message.reply_text("🔍 Searching knowledge base...")
+    # Show processing indicator
+    status_msg = await update.message.reply_text("🤖 Analyzing query...")
     
     try:
-        # 1. Retrieve relevant context
-        k = int(os.getenv("RETRIEVAL_K", 3))
-        logger.info(f"Searching for: {query}")
-        
-        context_chunks = vector_store.search(query, k=k)
-        logger.info(f"Retrieved {len(context_chunks)} chunks")
-        
-        # Update status
-        await status_msg.edit_text("🧠 Generating answer with local LLM...")
-        
-        # 2. Get conversation history
+        # Get conversation history
         history = get_user_history(user_id)
         
-        # 3. Generate response using LLM
-        response = llm_manager.generate_rag_response(
+        # Process with agent
+        logger.info(f"Processing query: {query}")
+        result = agent_processor.process_query(
             query=query,
-            context_chunks=context_chunks,
-            conversation_history=history
+            conversation_history=history,
+            explain_plan=False
         )
         
-        # 4. Format response with sources
-        sources = set([chunk['source'] for chunk in context_chunks])
-        sources_text = "\n".join([f"• {src}" for src in sources])
+        # Validate result
+        if not result or not isinstance(result, dict):
+            logger.error(f"Invalid result from agent_processor: {result}")
+            await status_msg.edit_text("❌ Internal error. Please try again.")
+            return
         
-        full_response = f"""{response}
-
-📚 **Sources:**
-{sources_text}
-
-_Generated by {llm_manager.model_name}_"""
-        
-        # 5. Update history
+        # Add to history
         add_to_history(user_id, "user", query)
-        add_to_history(user_id, "assistant", response)
+        add_to_history(user_id, "assistant", result.get('answer', ''))
         
-        # 6. Send response
-        await status_msg.edit_text(full_response, parse_mode='Markdown')
+        # Format response
+        response = result.get('answer', 'No response generated')
+        
+        # Add sources if available
+        if result.get('sources'):
+            sources_text = "\n".join([f"• {src}" for src in set(result['sources'])])
+            response += f"\n\n📚 **Sources:**\n{sources_text}"
+        
+        # Add routing info
+        plan = result.get('plan', {})
+        intent = plan.get('intent', 'unknown') if plan else 'unknown'
+        if intent == 'simple_greeting':
+            response += "\n\n⚡ *Fast response (no AI models used)*"
+        elif result.get('sources'):
+            response += f"\n\n🧠 *Powered by {llm_manager.model_name} with RAG*"
+        else:
+            response += f"\n\n🤖 *Powered by {llm_manager.model_name}*"
+        
+        # Try Markdown first, fallback to plain text if it fails
+        try:
+            await status_msg.edit_text(response, parse_mode='Markdown')
+        except Exception as markdown_error:
+            logger.warning(f"Markdown parsing failed, sending as plain text: {markdown_error}")
+            # Remove problematic markdown and send as plain text
+            await status_msg.edit_text(response, parse_mode=None)
         
     except Exception as e:
         logger.error(f"Error in ask_command: {e}", exc_info=True)
@@ -195,44 +240,81 @@ _Generated by {llm_manager.model_name}_"""
         )
 
 async def handle_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle image uploads"""
+    """Handle image uploads - DIRECT vision processing only"""
     user_id = update.effective_user.id
     
     if not update.message.photo:
         await update.message.reply_text("Please send an image.")
         return
     
-    status_msg = await update.message.reply_text("🖼️ Analyzing image with local BLIP model...")
+    status_msg = await update.message.reply_text("🖼️ Analyzing image with BLIP model...")
     
     try:
-        # Get largest photo
+        # Get image
         photo = update.message.photo[-1]
         photo_file = await photo.get_file()
-        
-        # Download image
         image_bytes = await photo_file.download_as_bytearray()
-        logger.info(f"Processing image of size {len(image_bytes)} bytes")
         
-        # Update status
-        await status_msg.edit_text("🎨 Generating caption and tags...")
+        logger.info(f"Processing image ({len(image_bytes)} bytes) - DIRECT vision call")
         
-        # Analyze image
-        description = vision_manager.analyze_image(bytes(image_bytes))
+        # CRITICAL: Call vision manager DIRECTLY
+        # DO NOT use agent_processor or LLM for images
+        result = vision_manager.generate_detailed_description(bytes(image_bytes))
+        
+        # Format response
+        caption = result.get('caption', 'Unable to analyze image')
+        tags = result.get('tags', [])
+        tags_str = ", ".join(tags) if tags else "N/A"
+        
+        response = f"""**Caption:** {caption}
+
+**Tags:** {tags_str}
+
+👁️ *Analyzed by {vision_manager.model_name.split('/')[-1]}*"""
         
         # Add to history
         add_to_history(user_id, "user", "[Uploaded an image]")
-        add_to_history(user_id, "assistant", description)
+        add_to_history(user_id, "assistant", caption)
         
-        # Send description
-        await status_msg.edit_text(description, parse_mode='Markdown')
+        logger.info(f"Image processed successfully: {caption[:50]}...")
+        
+        await status_msg.edit_text(response, parse_mode='Markdown')
         
     except Exception as e:
         logger.error(f"Error in handle_image: {e}", exc_info=True)
         await status_msg.edit_text(
-            "❌ Failed to process image. Please ensure:\n"
-            "• Image is in a supported format (JPG, PNG)\n"
-            "• Image size is reasonable (<5MB)"
+            "❌ Failed to process image.\n\n"
+            "Please ensure:\n"
+            "• Image is JPG or PNG\n"
+            "• File size < 5MB\n"
+            "• Vision model is loaded"
         )
+
+async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Show system statistics"""
+    stats = vector_store.get_stats()
+    
+    stats_msg = f"""
+📊 **System Statistics**
+
+**🎯 Agent Status:** Active
+**📚 Documents:** {stats['total_documents']}
+**🔢 Embeddings:** {stats['embedding_model']} dimensions
+
+**🤖 Models:**
+• LLM: `{llm_manager.model_name}`
+• Vision: `{vision_manager.model_name.split('/')[-1]}`
+• Embeddings: `{vector_store.embedding_model}`
+
+**👥 Users:** {len(user_history)} active conversations
+
+**💡 Agent Features:**
+✅ Intent classification
+✅ Smart model routing
+✅ Template responses for speed
+✅ RAG for knowledge queries
+"""
+    await update.message.reply_text(stats_msg, parse_mode='Markdown')
 
 async def summarize_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Summarize conversation"""
@@ -247,12 +329,12 @@ async def summarize_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     try:
         summary = llm_manager.summarize_conversation(history)
-        
         response = f"""📝 **Conversation Summary:**
 
 {summary}
 
-_Messages in history: {len(history)}_"""
+_Messages: {len(history)}_
+_Generated by {llm_manager.model_name}_"""
         
         await status_msg.edit_text(response, parse_mode='Markdown')
         
@@ -267,46 +349,47 @@ async def clear_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if user_id in user_history:
         msg_count = len(user_history[user_id])
         del user_history[user_id]
-        await update.message.reply_text(f"🗑️ Cleared {msg_count} messages from history")
+        await update.message.reply_text(f"🗑️ Cleared {msg_count} messages")
     else:
         await update.message.reply_text("No history to clear!")
 
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Help command"""
+    await start(update, context)
+
 def main():
     """Main function"""
-    # Initialize components
     try:
         initialize_components()
     except Exception as e:
-        logger.error(f"Failed to initialize components: {e}")
+        logger.error(f"Failed to initialize: {e}")
         logger.error("\nPlease ensure:")
         logger.error("1. Ollama is running: ollama serve")
         logger.error("2. Model is downloaded: ollama pull llama3.2:3b")
-        logger.error("3. Python packages are installed: pip install -r requirements.txt")
         return
     
-    # Get bot token
+    # Get token
     token = os.getenv("TELEGRAM_BOT_TOKEN")
     if not token:
-        logger.error("TELEGRAM_BOT_TOKEN not found in environment!")
+        logger.error("TELEGRAM_BOT_TOKEN not found!")
         return
     
     # Create application
     application = Application.builder().token(token).build()
     
-    # Add command handlers
+    # Add handlers
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("ask", ask_command))
+    application.add_handler(CommandHandler("explain", explain_command))
     application.add_handler(CommandHandler("stats", stats_command))
     application.add_handler(CommandHandler("summarize", summarize_command))
     application.add_handler(CommandHandler("clear", clear_command))
-    
-    # Add message handlers
     application.add_handler(MessageHandler(filters.PHOTO, handle_image))
     
     # Start bot
-    logger.info("🚀 Bot is now running!")
-    logger.info("Press Ctrl+C to stop")
+    logger.info("🚀 Agentic Bot is running!")
+    logger.info("Press Ctrl+C to stop\n")
     application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 if __name__ == '__main__':
