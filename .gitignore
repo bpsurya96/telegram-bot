@@ -1,2 +1,38 @@
+# Python
 __pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.pytest_cache/
 venv/
+env/
+
+# Data
+chroma_db/
+logs/
+*.db
+*.sqlite
+
+# Environment
+.env
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary
+*.tmp
+*.log
+*.bak
+
+# Test artifacts
+.coverage
+htmlcov/

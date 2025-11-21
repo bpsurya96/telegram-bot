@@ -395,35 +395,6 @@ self.intent_patterns[QueryIntent.CODE_GENERATION] = [
 
 ---
 
-## 🚀 Roadmap
-
-- [ ] Web UI dashboard
-- [ ] Document upload (PDF/DOCX)
-- [ ] Multi-language support
-- [ ] Voice message support
-- [ ] Analytics dashboard
-- [ ] Custom model fine-tuning
-
----
-
-## 🤝 Contributing
-
-Contributions welcome! Please:
-
-1. Fork the repo
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a PR
-
----
-
-## 📄 License
-
-MIT License - Free to use and modify!
-
----
-
 ## 🙏 Credits
 
 Built with:
