@@ -10,7 +10,6 @@ from transformers import BlipProcessor, BlipForConditionalGeneration
 import io
 from typing import Dict
 
-
 logger = logging.getLogger(__name__)
 
 class VisionManager:
@@ -101,9 +100,12 @@ class VisionManager:
             
             # Simple tag extraction: nouns and adjectives
             # In production, use proper NLP or CLIP for tags
-            stop_words = {'a', 'an', 'the', 'is', 'are', 'of', 'in', 'on', 'at', 'to'}
+            stop_words = {'a', 'an', 'the', 'is', 'are', 'of', 'in', 'on', 'at', 'to', 'with', 'and', 'or'}
             potential_tags = [w for w in words if w not in stop_words and len(w) > 3]
             tags = potential_tags[:3] if len(potential_tags) >= 3 else potential_tags
+            
+            logger.info(f"Generated caption: {caption}")
+            logger.info(f"Extracted tags: {tags}")
             
             return {
                 'caption': caption,
@@ -112,7 +114,7 @@ class VisionManager:
             }
         
         except Exception as e:
-            logger.error(f"Error generating description: {e}")
+            logger.error(f"Error generating description: {e}", exc_info=True)
             return {
                 'caption': 'Unable to process image',
                 'tags': [],

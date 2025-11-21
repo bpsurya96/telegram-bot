@@ -24,6 +24,7 @@ class VectorStore:
         self.embedding_model = SentenceTransformer(embedding_model_name)
         
         logger.info(f"Initializing ChromaDB at: {persist_dir}")
+        # Disable telemetry to avoid errors
         self.client = chromadb.PersistentClient(
             path=persist_dir,
             settings=Settings(
@@ -31,6 +32,7 @@ class VectorStore:
                 allow_reset=True
             )
         )
+        
         # Get or create collection
         try:
             self.collection = self.client.get_collection("knowledge_base")

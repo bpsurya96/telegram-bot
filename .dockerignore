@@ -1,0 +1,52 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+*.egg-info/
+.pytest_cache/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Documentation (build separately)
+*.md
+docs/
+
+# Data (use volumes)
+chroma_db/
+logs/
+*.db
+*.sqlite
+
+# Environment
+.env
+.env.*
+!.env.docker
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+test_*.py
+*_test.py
+tests/
+
+# Temporary
+*.tmp
+*.log
+*.bak

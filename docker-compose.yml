@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  telegram-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: telegram-rag-bot
+    environment:
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - OLLAMA_HOST=http://localhost:11434
+      - OLLAMA_MODEL=llama3.2:3b
+      - EMBEDDING_MODEL=all-MiniLM-L6-v2
+      - VISION_MODEL=Salesforce/blip-image-captioning-base
+      - RETRIEVAL_K=3
+      - MAX_HISTORY_LENGTH=5
+      - PYTHONUNBUFFERED=1
+    volumes:
+      # Persist vector database
+      - ./chroma_db:/app/chroma_db
+      # Persist Ollama models
+      - ollama_models:/root/.ollama
+      # Persist HuggingFace cache
+      - hf_cache:/root/.cache/huggingface
+      # Logs
+      - ./logs:/app/logs
+    restart: unless-stopped
+    # Resource limits (adjust based on your hardware)
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+        reservations:
+          memory: 4G
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  ollama_models:
+    driver: local
+  hf_cache:
+    driver: local
